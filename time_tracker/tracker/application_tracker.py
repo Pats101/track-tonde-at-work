@@ -59,7 +59,9 @@ class ApplicationTracker:
     
     def _update_app_time(self, app, duration):
         """Update the time spent on an application."""
-        if app in self.app_times:
-            self.app_times[app] += duration
-        else:
-            self.app_times[app] = duration 
+        # Only log if duration is more than 1 second
+        if duration >= 1.0:
+            if app in self.app_times:
+                self.app_times[app] += duration
+            else:
+                self.app_times[app] = duration 
