@@ -1,3 +1,4 @@
 psutil>=5.9.0
 pywin32>=305
-pytest>=7.0.0 
+pytest>=7.0.0
+pytest-mock>=3.10.0 
