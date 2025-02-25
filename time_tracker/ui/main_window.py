@@ -83,62 +83,82 @@ class TimeTrackerUI(QMainWindow):
         charts_tab = QWidget()
         charts_layout = QHBoxLayout(charts_tab)
         
-        # Pie chart
+        # Pie chart setup
+        pie_container = QWidget()
+        pie_layout = QVBoxLayout(pie_container)
+        
         self.pie_chart = QChart()
         self.pie_chart.setTitle("Application Usage Distribution")
         self.pie_chart.setAnimationOptions(QChart.AnimationOption.SeriesAnimations)
         self.pie_chart.setTheme(QChart.ChartTheme.ChartThemeDark)
         self.pie_chart.setBackgroundVisible(False)
+        self.pie_chart.legend().setVisible(True)
+        self.pie_chart.legend().setAlignment(Qt.AlignmentFlag.AlignRight)
         
         pie_view = QChartView(self.pie_chart)
         pie_view.setRenderHints(QPainter.RenderHint.Antialiasing | 
                                QPainter.RenderHint.TextAntialiasing |
                                QPainter.RenderHint.SmoothPixmapTransform)
+        pie_view.setMinimumSize(400, 300)
+        pie_layout.addWidget(pie_view)
         
-        # Create scene and placeholder text
-        pie_scene = QGraphicsScene(pie_view)
-        self.pie_placeholder = pie_scene.addText(
-            "No data available\nStart tracking to see statistics",
-            QFont("Segoe UI", 12)
-        )
-        self.pie_placeholder.setDefaultTextColor(QColor("#ffffff"))
-        self.pie_placeholder.setVisible(True)
-        pie_view.setScene(pie_scene)
+        # Create placeholder for pie chart
+        self.pie_placeholder = QLabel("No data available\nStart tracking to see statistics")
+        self.pie_placeholder.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.pie_placeholder.setStyleSheet("color: white; font-size: 12px;")
+        pie_layout.addWidget(self.pie_placeholder)
+        self.pie_placeholder.hide()
         
-        charts_layout.addWidget(pie_view)
+        charts_layout.addWidget(pie_container)
         
-        # Bar chart
+        # Bar chart setup
+        bar_container = QWidget()
+        bar_layout = QVBoxLayout(bar_container)
+        
         self.bar_chart = QChart()
         self.bar_chart.setTitle("Top Applications by Time")
         self.bar_chart.setAnimationOptions(QChart.AnimationOption.SeriesAnimations)
         self.bar_chart.setTheme(QChart.ChartTheme.ChartThemeDark)
         self.bar_chart.setBackgroundVisible(False)
-        self.bar_chart.setMargins(QMargins(10, 10, 10, 10))  # Add margins
+        self.bar_chart.setMargins(QMargins(10, 10, 10, 10))
+        self.bar_chart.legend().setVisible(True)
+        self.bar_chart.legend().setAlignment(Qt.AlignmentFlag.AlignBottom)
         
         bar_view = QChartView(self.bar_chart)
         bar_view.setRenderHints(QPainter.RenderHint.Antialiasing | 
                                QPainter.RenderHint.TextAntialiasing |
                                QPainter.RenderHint.SmoothPixmapTransform)
+        bar_view.setMinimumSize(400, 300)
+        bar_layout.addWidget(bar_view)
         
-        # Create scene and placeholder text
-        bar_scene = QGraphicsScene(bar_view)
-        self.bar_placeholder = bar_scene.addText(
-            "No data available\nStart tracking to see statistics",
-            QFont("Segoe UI", 12)
-        )
-        self.bar_placeholder.setDefaultTextColor(QColor("#ffffff"))
-        self.bar_placeholder.setVisible(True)
-        bar_view.setScene(bar_scene)
+        # Create placeholder for bar chart
+        self.bar_placeholder = QLabel("No data available\nStart tracking to see statistics")
+        self.bar_placeholder.setAlignment(Qt.AlignmentFlag.AlignCenter)
+        self.bar_placeholder.setStyleSheet("color: white; font-size: 12px;")
+        bar_layout.addWidget(self.bar_placeholder)
+        self.bar_placeholder.hide()
         
-        charts_layout.addWidget(bar_view)
+        charts_layout.addWidget(bar_container)
         
+        # Add charts tab
         tab_widget.addTab(charts_tab, "Charts")
         
-        # Statistics tab
+        # Statistics tab with better formatting
         stats_tab = QWidget()
         stats_layout = QVBoxLayout(stats_tab)
         self.stats_label = QLabel()
+        self.stats_label.setAlignment(Qt.AlignmentFlag.AlignTop | Qt.AlignmentFlag.AlignLeft)
+        self.stats_label.setStyleSheet("""
+            QLabel {
+                color: white;
+                font-size: 14px;
+                padding: 20px;
+                background-color: #1e1e1e;
+                border-radius: 10px;
+            }
+        """)
         stats_layout.addWidget(self.stats_label)
+        stats_layout.addStretch()
         tab_widget.addTab(stats_tab, "Statistics")
         
         layout.addWidget(tab_widget)
@@ -214,31 +234,14 @@ class TimeTrackerUI(QMainWindow):
     def update_charts(self):
         """Update the charts with current data."""
         if not self.tracker.app_times:
-            # Show placeholders and clear charts
             self.pie_chart.removeAllSeries()
             self.bar_chart.removeAllSeries()
-            self.pie_placeholder.setVisible(True)
-            self.bar_placeholder.setVisible(True)
-            
-            # Center the placeholder text
-            pie_view = self.pie_placeholder.scene().views()[0]
-            pie_rect = pie_view.rect()
-            self.pie_placeholder.setPos(
-                pie_rect.center().x() - self.pie_placeholder.boundingRect().width() / 2,
-                pie_rect.center().y() - self.pie_placeholder.boundingRect().height() / 2
-            )
-            
-            bar_view = self.bar_placeholder.scene().views()[0]
-            bar_rect = bar_view.rect()
-            self.bar_placeholder.setPos(
-                bar_rect.center().x() - self.bar_placeholder.boundingRect().width() / 2,
-                bar_rect.center().y() - self.bar_placeholder.boundingRect().height() / 2
-            )
+            self.pie_placeholder.show()
+            self.bar_placeholder.show()
             return
             
-        # Hide placeholders when we have data
-        self.pie_placeholder.setVisible(False)
-        self.bar_placeholder.setVisible(False)
+        self.pie_placeholder.hide()
+        self.bar_placeholder.hide()
         
         # Update pie chart
         pie_series = QPieSeries()
@@ -249,13 +252,13 @@ class TimeTrackerUI(QMainWindow):
             percentage = (duration / total_time) * 100
             slice = pie_series.append(app_name, duration/60)  # Convert to minutes
             slice.setLabelVisible(True)
-            slice.setLabel(f"{app_name}: {percentage:.1f}%")
+            slice.setLabel(f"{app_name}\n{percentage:.1f}%")
             slice.setLabelPosition(QPieSlice.LabelPosition.LabelOutside)
+            slice.setExploded(True)
+            slice.setExplodeDistanceFactor(0.1)
         
         self.pie_chart.removeAllSeries()
         self.pie_chart.addSeries(pie_series)
-        self.pie_chart.legend().setVisible(True)
-        self.pie_chart.legend().setAlignment(Qt.AlignmentFlag.AlignRight)
         
         # Update bar chart
         self.bar_chart.removeAllSeries()
