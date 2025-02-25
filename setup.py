@@ -1,10 +1,9 @@
 from setuptools import setup, find_packages
 
 setup(
-    name="time-tracker",
+    name="time_tracker",
     version="0.1.0",
     packages=find_packages(),
-    package_dir={"": "src"},
     install_requires=[
         "psutil>=5.9.0",
         "pywin32>=305",

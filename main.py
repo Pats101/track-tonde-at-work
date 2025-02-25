@@ -1,4 +1,4 @@
-from src.tracker.application_tracker import ApplicationTracker
+from time_tracker.tracker.application_tracker import ApplicationTracker
 
 def main():
     tracker = ApplicationTracker()
